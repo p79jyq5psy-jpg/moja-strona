@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strona to podstawa - Michał Pietrzak</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { font-size: 14px; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth; 
+            background-color: #f8fafc; 
+            color: #1e293b; 
+            overflow-x: hidden; 
+        }
+        
+        /* Glassmorphism */
+        .glass { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+        }
+        
+        /* Reveal Animations */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(30px); 
+            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); 
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+        
+        /* Custom Background Mesh */
+        .bg-mesh {
+            background-color: #ffffff;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(225,39%,30%,0.03) 0, transparent 50%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.4",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.39.0"
+      }
+    }
+    </script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="antialiased bg-mesh">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import ReactDOM from 'react-dom/client';
+        import { GoogleGenAI, Type } from "@google/genai";
+
+        // --- KONFIGURACJA AI ---
+        const ai = new GoogleGenAI({ apiKey: window.process?.env?.API_KEY || '' });
+
+        const getAIRecommendation = async (data) => {
+            const prompt = `Jesteś ekspertem serwisu "Strona to podstawa". Zanalizuj biznes: "${data.businessName}" w branży "${data.industry}". Cel: "${data.goals}". Wybierz plan (Landing Page, Strona Firmowa, lub E-commerce). Podaj: uzasadnienie, 4 kluczowe funkcje i krótką strategię marketingową. Odpowiedz po polsku w formacie JSON.`;
+            const response = await ai.models.generateContent({
+                model: "gemini-3-flash-preview",
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            plan: { type: Type.STRING },
+                            suggestedFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+                            marketingStrategy: { type: Type.STRING },
+                            whyThisPlan: { type: Type.STRING }
+                        },
+                        required: ["plan", "suggestedFeatures", "marketingStrategy", "whyThisPlan"]
+                    }
+                }
+            });
+            return JSON.parse(response.text.trim());
+        };
+
+        const askAIExpert = async (question) => {
+            const prompt = `Jesteś ekspertem od stron www w zespole Michała Pietrzaka ("Strona to podstawa"). Odpowiadaj konkretnie i zachęcająco na pytania o strony, SEO i e-commerce. Pytanie: ${question}`;
+            const response = await ai.models.generateContent({
+                model: "gemini-3-flash-preview",
+                contents: prompt,
+                config: { temperature: 0.7, maxOutputTokens: 300 },
+            });
+            return response.text.trim();
+        };
+
+        // --- KOMPONENTY ---
+
+        const Navbar = () => (
+            <nav className="sticky top-0 z-50 glass">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg">S</div>
+                            <span className="text-xl font-extrabold text-slate-900 tracking-tight">Strona to podstawa</span>
+                        </div>
+                        <div className="hidden md:flex space-x-8 text-sm font-bold">
+                            <a href="#hero" className="text-slate-600 hover:text-indigo-600 transition uppercase tracking-widest text-[10px]">Start</a>
+                            <a href="#expertise" className="text-slate-600 hover:text-indigo-600 transition uppercase tracking-widest text-[10px]">Branże</a>
+                            <a href="#about" className="text-slate-600 hover:text-indigo-600 transition uppercase tracking-widest text-[10px]">O nas</a>
+                            <a href="#pricing" className="text-slate-600 hover:text-indigo-600 transition uppercase tracking-widest text-[10px]">Cennik</a>
+                        </div>
+                        <a href="tel:784488447" className="bg-indigo-600 text-white px-6 py-2.5 rounded-full text-xs font-bold hover:bg-indigo-700 transition shadow-xl shadow-indigo-100 hidden sm:block">
+                            Zadzwoń: 784 488 447
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        );
+
+        const Hero = () => (
+            <section id="hero" className="pt-24 pb-32 text-center px-4 relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-10">
+                    <div className="absolute top-20 left-1/4 w-64 h-64 bg-indigo-400 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-400 rounded-full blur-3xl"></div>
+                </div>
+                <div className="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8 shadow-sm">
+                    Twoja obecność w sieci zaczyna się tutaj
+                </div>
+                <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter mb-8 leading-[1.1]">
+                    Nie szukaj klientów. <br />
+                    <span className="text-indigo-600">Niech oni znajdą Ciebie.</span>
+                </h1>
+                <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+                    Tworzymy szybkie, nowoczesne i skuteczne strony, które stają się Twoim najlepszym handlowcem pracującym bez przerwy.
+                </p>
+                <div className="flex flex-wrap justify-center gap-6">
+                    <a href="#pricing" className="bg-indigo-600 text-white px-10 py-5 rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:scale-105 transition-all">
+                        Wybierz swój plan
+                    </a>
+                    <a href="#consultant" className="bg-white text-indigo-600 border-2 border-slate-100 px-10 py-5 rounded-2xl font-black text-lg hover:bg-slate-50 transition-all shadow-sm">
+                        Bezpłatna Analiza AI
+                    </a>
+                </div>
+            </section>
+        );
+
+        const Expertise = () => {
+            const sectors = [
+                { name: "Gastronomia", desc: "Systemy rezerwacji, menu online i integracje z dostawami.", img: "https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=600&q=80" },
+                { name: "Usługi i Beauty", desc: "Kalendarze wizyt, portfolio i opinie klientów w jednym miejscu.", img: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80" },
+                { name: "Nieruchomości", desc: "Zaawansowane wyszukiwarki ofert, mapy i wirtualne spacery.", img: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&q=80" },
+                { name: "E-commerce", desc: "Sklepy, które realnie sprzedają i same zarządzają stanami.", img: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" }
+            ];
+            return (
+                <section id="expertise" className="py-24 max-w-7xl mx-auto px-4">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                        <div className="max-w-2xl">
+                            <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Eksperci od Twojego sukcesu</h2>
+                            <p className="text-slate-500 font-medium">Dostarczamy rozwiązania skrojone pod specyfikę Twojej branży.</p>
+                        </div>
+                        <div className="h-1 w-24 bg-indigo-600 rounded-full hidden md:block mb-4"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {sectors.map((s, i) => (
+                            <div key={i} className="group bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500">
+                                <div className="h-56 overflow-hidden relative">
+                                    <img src={s.img} alt={s.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-1000" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                </div>
+                                <div className="p-8">
+                                    <h3 className="font-extrabold text-xl mb-3 text-slate-900">{s.name}</h3>
+                                    <p className="text-slate-500 text-sm leading-relaxed font-medium">{s.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const About = () => (
+            <section id="about" className="py-32 bg-slate-900 text-white relative overflow-hidden">
+                <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-indigo-600/10 blur-[150px] rounded-full"></div>
+                <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center gap-16">
+                    <div className="w-72 h-72 md:w-96 md:h-96 shrink-0 rounded-[3rem] overflow-hidden border-[12px] border-slate-800 shadow-2xl z-10">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" alt="Michał Pietrzak" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="z-10">
+                        <h2 className="text-4xl md:text-5xl font-black mb-8 italic tracking-tighter leading-tight">
+                            "Strona to nie koszt. To fundament Twojej przyszłości."
+                        </h2>
+                        <div className="mb-10 bg-white/5 p-6 rounded-3xl border border-white/10 backdrop-blur-sm">
+                            <p className="text-indigo-400 font-black uppercase tracking-[0.3em] text-[10px] mb-2">Właściciel Projektu</p>
+                            <p className="text-3xl font-black">Michał Pietrzak</p>
+                            <div className="mt-6 flex flex-wrap gap-4">
+                                <a href="tel:784488447" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">📞 784 488 447</a>
+                                <a href="https://instagram.com/pietrzaakkk" target="_blank" className="bg-white/10 px-6 py-3 rounded-xl font-bold hover:bg-white/20 transition">📸 @pietrzaakkk</a>
+                            </div>
+                        </div>
+                        <p className="text-slate-400 leading-relaxed max-w-2xl font-medium text-lg">
+                            Wierzę, że polscy przedsiębiorcy zasługują na jakość z najwyższej światowej półki. Od 10 lat projektuję narzędzia, które nie tylko ładnie wyglądają, ale przede wszystkim zarabiają na siebie od pierwszego dnia po publikacji.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const AIConsultant = () => {
+            const [data, setData] = useState({ businessName: '', industry: '', goals: '' });
+            const [loading, setLoading] = useState(false);
+            const [result, setResult] = useState(null);
+
+            const handleRun = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                try {
+                    const res = await getAIRecommendation(data);
+                    setResult(res);
+                } catch (e) { alert('Aby funkcja AI działała, musisz dodać klucz API Gemini.'); }
+                finally { setLoading(false); }
+            };
+
+            return (
+                <section id="consultant" className="py-32 max-w-4xl mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl">🧠</div>
+                        <h2 className="text-4xl font-black mb-4 tracking-tight">Bezpłatna Analiza Strategiczna AI</h2>
+                        <p className="text-slate-500 font-medium">Dowiedz się, jakiego rozwiązania potrzebuje Twój biznes w mniej niż 30 sekund.</p>
+                    </div>
+                    {!result ? (
+                        <form onSubmit={handleRun} className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 space-y-8">
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Twoja Firma</label>
+                                    <input required placeholder="Np. Restauracja U Michała" className="w-full p-5 bg-slate-50 border-none rounded-2xl outline-none focus:ring-4 ring-indigo-500/10 transition-all font-medium" value={data.businessName} onChange={e => setData({...data, businessName: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Branża</label>
+                                    <input required placeholder="Np. Gastronomia, Budownictwo" className="w-full p-5 bg-slate-50 border-none rounded-2xl outline-none focus:ring-4 ring-indigo-500/10 transition-all font-medium" value={data.industry} onChange={e => setData({...data, industry: e.target.value})} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Co chcesz osiągnąć?</label>
+                                <textarea required placeholder="Opisz swoje cele" className="w-full p-5 bg-slate-50 border-none rounded-2xl outline-none focus:ring-4 ring-indigo-500/10 transition-all font-medium resize-none" rows={3} value={data.goals} onChange={e => setData({...data, goals: e.target.value})} />
+                            </div>
+                            <button disabled={loading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-2xl shadow-indigo-200">
+                                {loading ? 'Analizuję...' : 'Odbierz rekomendację strategiczną'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="bg-white p-10 rounded-[2.5rem] border-4 border-indigo-600 shadow-2xl reveal active">
+                            <div className="flex justify-between items-start mb-10">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-indigo-400 tracking-widest mb-1">Rekomendowany Plan</p>
+                                    <h3 className="text-4xl font-black text-slate-900">{result.plan}</h3>
+                                </div>
+                                <button onClick={() => setResult(null)} className="p-3 hover:bg-slate-100 rounded-full transition-all">✕</button>
+                            </div>
+                            <p className="text-slate-600 italic mb-10 text-lg leading-relaxed font-medium">"{result.whyThisPlan}"</p>
+                            <div className="grid md:grid-cols-2 gap-10 mb-12">
+                                <div className="bg-slate-50 p-8 rounded-3xl">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Niezbędne Funkcje</p>
+                                    <ul className="space-y-3">{result.suggestedFeatures.map((f, i) => <li key={i} className="text-sm font-bold text-slate-700 flex items-center gap-3">✓ {f}</li>)}</ul>
+                                </div>
+                                <div className="bg-indigo-50 p-8 rounded-3xl">
+                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-6">Wstępna Strategia</p>
+                                    <p className="text-indigo-900 text-sm leading-relaxed font-medium">{result.marketingStrategy}</p>
+                                </div>
+                            </div>
+                            <a href="tel:784488447" className="block text-center bg-indigo-600 text-white py-5 rounded-2xl font-black hover:bg-indigo-700 transition">Realizuję z Michałem</a>
+                        </div>
+                    )}
+                </section>
+            );
+        };
+
+        const AIChat = () => {
+            const [messages, setMessages] = useState([{role: 'ai', text: 'Cześć! Masz pytania dotyczące Twojej przyszłej strony?'}]);
+            const [input, setInput] = useState('');
+            const [loading, setLoading] = useState(false);
+            const chatRef = useRef(null);
+
+            useEffect(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [messages]);
+
+            const onSend = async (e) => {
+                e.preventDefault();
+                if (!input.trim() || loading) return;
+                const msg = input; setInput(''); setMessages(p => [...p, {role: 'user', text: msg}]);
+                setLoading(true);
+                try {
+                    const res = await askAIExpert(msg);
+                    setMessages(p => [...p, {role: 'ai', text: res}]);
+                } catch { setMessages(p => [...p, {role: 'ai', text: 'Skontaktuj się z Michałem bezpośrednio pod 784 488 447.'}]); }
+                finally { setLoading(false); }
+            };
+
+            return (
+                <section className="py-24 px-4">
+                    <div className="max-w-2xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
+                        <div className="bg-slate-900 p-6 text-white flex items-center gap-4">
+                            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-xl">🤖</div>
+                            <div>
+                                <p className="font-black text-base">AI Doradca Techniczny</p>
+                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Odpowiada w kilka sekund</p>
+                            </div>
+                        </div>
+                        <div ref={chatRef} className="h-96 overflow-y-auto p-8 space-y-6 bg-slate-50/50">
+                            {messages.map((m, i) => (
+                                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[85%] p-5 rounded-3xl text-sm font-medium ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-700 rounded-tl-none border'}`}>
+                                        {m.text}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <form onSubmit={onSend} className="p-6 bg-white border-t flex gap-4">
+                            <input className="flex-1 p-4 bg-slate-50 rounded-2xl text-sm outline-none" placeholder="Zadaj pytanie..." value={input} onChange={e => setInput(e.target.value)} />
+                            <button className="bg-indigo-600 text-white px-8 rounded-2xl hover:bg-indigo-700 font-bold">➜</button>
+                        </form>
+                    </div>
+                </section>
+            );
+        };
+
+        const Pricing = () => {
+            const plans = [
+                { name: 'Landing Page', price: '999 zł', desc: 'Idealny wybór dla nowych projektów.', features: ['Strona Single Page (RWD)', 'Formularz kontaktowy', 'Podstawowe SEO', 'Certyfikat SSL'] },
+                { name: 'Strona Firmowa', price: '2499 zł', desc: 'Kompleksowy wizerunek Twojego biznesu.', features: ['Do 10 podstron ofertowych', 'Intuicyjny Panel CMS', 'Mapa Google & Opinie', 'Blog / Aktualności'], rec: true },
+                { name: 'E-commerce', price: '4999 zł', desc: 'Profesjonalny sklep internetowy.', features: ['Nielimitowane produkty', 'Szybkie płatności', 'Panel zarządzania', 'Analityka sprzedaży'] }
+            ];
+            return (
+                <section id="pricing" className="py-32 bg-slate-50 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <h2 className="text-4xl font-black text-center mb-16">Cennik</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                            {plans.map((p, i) => (
+                                <div key={i} className={`p-10 rounded-[3rem] bg-white border ${p.rec ? 'border-indigo-600 scale-105 z-10 shadow-2xl' : 'border-slate-200 shadow-sm'}`}>
+                                    <h3 className="text-2xl font-black mb-2">{p.name}</h3>
+                                    <p className="text-slate-500 text-sm mb-10">{p.desc}</p>
+                                    <div className="mb-10"><span className="text-5xl font-black text-indigo-600">{p.price}</span> <span className="text-xs font-black uppercase">netto</span></div>
+                                    <ul className="space-y-4 mb-12">
+                                        {p.features.map((f, j) => <li key={j} className="text-sm font-semibold flex items-center gap-3">● {f}</li>)}
+                                    </ul>
+                                    <a href="tel:784488447" className="block w-full py-5 rounded-2xl font-black text-center bg-slate-900 text-white">Zamawiam Teraz</a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => (
+            <footer className="bg-slate-950 text-slate-400 py-24 px-4 border-t border-white/5">
+                <div className="max-w-7xl mx-auto text-center md:text-left">
+                    <div className="flex items-center gap-2 mb-8 justify-center md:justify-start">
+                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-xl">S</div>
+                        <span className="text-2xl font-black text-white">Strona to podstawa</span>
+                    </div>
+                    <p className="text-lg mb-8">Budujemy fundamenty nowoczesnego polskiego biznesu.</p>
+                    <div className="pt-16 border-t border-white/5 text-center text-[10px] uppercase font-black tracking-[0.5em]">
+                        &copy; 2024 Strona to podstawa. Michał Pietrzak.
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            useEffect(() => {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                return () => observer.disconnect();
+            }, []);
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <Navbar />
+                    <main>
+                        <Hero />
+                        <div className="reveal"><Expertise /></div>
+                        <div className="reveal"><About /></div>
+                        <div className="reveal"><AIConsultant /></div>
+                        <div className="reveal"><AIChat /></div>
+                        <div className="reveal"><Pricing /></div>
+                    </main>
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
