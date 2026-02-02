@@ -75,8 +75,7 @@
         import { GoogleGenAI, Type } from "@google/genai";
 
         // --- KONFIGURACJA AI ---
-        const ai = new GoogleGenAI({ apiKey: window.process?.env?.API_KEY || '' });
-
+        const ai = new GoogleGenAI({ apiKey: 'BrakKlucza' });
         const getAIRecommendation = async (data) => {
             const prompt = `Jesteś ekspertem serwisu "Strona to podstawa". Zanalizuj biznes: "${data.businessName}" w branży "${data.industry}". Cel: "${data.goals}". Wybierz plan (Landing Page, Strona Firmowa, lub E-commerce). Podaj: uzasadnienie, 4 kluczowe funkcje i krótką strategię marketingową. Odpowiedz po polsku w formacie JSON.`;
             const response = await ai.models.generateContent({
