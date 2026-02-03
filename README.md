@@ -3,291 +3,329 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Francuska Koszykówka - Golden Era</title>
+    <title>French Hoops Hub - The Golden Generation</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        h1, h2, h3, .font-oswald { font-family: 'Oswald', sans-serif; }
-        .bg-bleu-de-france { background-color: #002395; }
-        .text-bleu-de-france { color: #002395; }
-        .border-bleu-de-france { border-color: #002395; }
-        .bg-rouge-france { background-color: #ED2939; }
-        .chat-scroll::-webkit-scrollbar { width: 6px; }
-        .chat-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: #002395; border-radius: 10px; }
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8fafc; }
+        h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* Barwy Francji */
+        .text-bleu { color: #002395; }
+        .bg-bleu { background-color: #002395; }
+        .text-rouge { color: #ED2939; }
+        .bg-rouge { background-color: #ED2939; }
+        
+        /* Efekty */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #002395 0%, #0a192f 100%);
+        }
+        
+        /* Czat */
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-track { background: #f1f1f1; }
+        .chat-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Animacja pisania */
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
-        const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+        const { useState, useEffect, useRef } = React;
 
-        // --- DANE ---
+        // --- BAZA WIEDZY I DANE ---
         const PLAYERS = [
-          {
-            id: 'wemby',
-            name: 'Victor Wembanyama',
-            team: 'San Antonio Spurs',
-            position: 'Center/Power Forward',
-            image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=800&auto=format&fit=crop',
-            description: 'Nazywany "Alienem", Wembanyama to największy talent w historii francuskiej koszykówki. Wybrany z numerem 1 w drafcie NBA 2023.',
-            achievements: ['NBA Rookie of the Year 2024', 'Wicemistrz Olimpijski 2024', 'Lider bloków NBA']
-          },
-          {
-            id: 'gobert',
-            name: 'Rudy Gobert',
-            team: 'Minnesota Timberwolves',
-            position: 'Center',
-            image: 'https://images.unsplash.com/photo-1519861531473-9200362f46b3?q=80&w=800&auto=format&fit=crop',
-            description: '"The Stifle Tower" to filar defensywy reprezentacji Francji i wielokrotny najlepszy obrońca ligi NBA.',
-            achievements: ['4x NBA Defensive Player of the Year', '3x NBA All-Star', 'Wicemistrz Olimpijski 2020, 2024']
-          },
-          {
-            id: 'parker',
-            name: 'Tony Parker',
-            team: 'Legend (San Antonio Spurs)',
-            position: 'Point Guard',
-            image: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=800&auto=format&fit=crop',
-            description: 'Najbardziej utytułowany francuski koszykarz w historii. Członek Hall of Fame i legenda Spurs.',
-            achievements: ['4x Mistrz NBA', 'NBA Finals MVP 2007', 'Mistrz Europy 2013']
-          }
+            {
+                id: 1,
+                name: "Victor Wembanyama",
+                nickname: "L'Alien",
+                img: "https://images.unsplash.com/photo-1519766304800-c95190085667?q=80&w=800&auto=format&fit=crop", // Symboliczne zdjęcie
+                desc: "Rewolucja w ludzkiej postaci. 224 cm wzrostu, ruchy rozgrywającego. Rookie of the Year 2024.",
+                stats: "21.4 PPG | 10.6 RPG | 3.6 BPG"
+            },
+            {
+                id: 2,
+                name: "Tony Parker",
+                nickname: "TP9",
+                img: "https://images.unsplash.com/photo-1505666287802-931dc83948e9?q=80&w=800&auto=format&fit=crop",
+                desc: "Ojciec chrzestny francuskiego basketu. 4 pierścienie NBA ze Spurs. Pierwszy europejski MVP Finałów.",
+                stats: "Hall of Fame | 4x NBA Champ"
+            },
+            {
+                id: 3,
+                name: "Rudy Gobert",
+                nickname: "Stifle Tower",
+                img: "https://images.unsplash.com/photo-1628779238951-bd5c9e7a5e8c?q=80&w=800&auto=format&fit=crop",
+                desc: "Minister Obrony Narodowej. Czterokrotny zdobywca nagrody dla najlepszego obrońcy NBA (DPOY).",
+                stats: "4x DPOY | 3x All-Star"
+            }
         ];
 
-        const NBA_GROWTH_DATA = [
-          { year: 1997, count: 1 }, { year: 2001, count: 2 }, { year: 2005, count: 5 },
-          { year: 2010, count: 8 }, { year: 2015, count: 10 }, { year: 2020, count: 12 }, { year: 2024, count: 14 }
-        ];
+        // Symulowana sztuczna inteligencja (działa bez klucza API!)
+        const AI_KNOWLEDGE = {
+            "wembanyama": "Victor Wembanyama to fenomen. Nazywany 'Alien' przez LeBrona Jamesa. Jest nadzieją Spurs i kadry Francji na złoto w Los Angeles 2028.",
+            "parker": "Tony Parker to legenda. Jego manewr 'spin move' był nie do zatrzymania. Obecnie jest właścicielem klubu ASVEL Lyon-Villeurbanne.",
+            "gobert": "Rudy Gobert to defensywna kotwica. Choć bywa krytykowany za ofensywę, jego wpływ na obronę jest historyczny.",
+            "francja": "Reprezentacja Francji to obecni wicemistrzowie olimpijscy (Paryż 2024). Mają niesamowity system szkolenia w INSEP.",
+            "nba": "W NBA gra obecnie rekordowa liczba Francuzów, w tym Sarr, Risacher i oczywiście Wemby. Francja to druga siła w NBA po USA.",
+            "default": "To ciekawe pytanie! Francuska koszykówka przeżywa Złotą Erę. Zapytaj mnie o Parkera, Wembanyamę, Goberta lub kadrę narodową!"
+        };
 
-        // --- KOMPONENTY ---
         const Navbar = () => (
-          <nav className="sticky top-0 z-50 bg-white shadow-md border-b-4 border-bleu-de-france">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-20 items-center">
-                <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 bg-bleu-de-france flex items-center justify-center rounded-full text-white font-bold">FR</div>
-                  <span className="text-2xl font-oswald font-bold tracking-tight">FRENCH<span className="text-rouge-france">HOOPS</span></span>
+            <nav className="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                    <div className="text-2xl font-serif font-bold tracking-tighter">
+                        FRENCH<span className="text-bleu">HOOPS</span><span className="text-rouge">.HUB</span>
+                    </div>
+                    <div className="hidden md:flex space-x-8 text-sm font-semibold tracking-wide text-gray-600">
+                        <a href="#hero" className="hover:text-bleu transition">START</a>
+                        <a href="#legends" className="hover:text-bleu transition">IKONY</a>
+                        <a href="#facts" className="hover:text-bleu transition">CIEKAWOSTKI</a>
+                        <a href="#ai-assistant" className="px-4 py-2 bg-bleu text-white rounded-full hover:bg-blue-800 transition shadow-lg shadow-blue-900/20">CHAT AI</a>
+                    </div>
                 </div>
-                <div className="hidden md:flex space-x-8 font-semibold uppercase text-sm">
-                  <a href="#hero" className="hover:text-bleu-de-france transition">Start</a>
-                  <a href="#stars" className="hover:text-bleu-de-france transition">Gwiazdy</a>
-                  <a href="#stats" className="hover:text-bleu-de-france transition">Rozwój</a>
-                  <a href="#ai" className="hover:text-bleu-de-france transition">Ekspert AI</a>
-                </div>
-              </div>
-            </div>
-          </nav>
+            </nav>
         );
 
         const Hero = () => (
-          <section id="hero" className="relative h-[80vh] flex items-center overflow-hidden bg-black text-white">
-            <div className="absolute inset-0 opacity-60">
-              <img src="https://images.unsplash.com/photo-1544919982-b61976f0ba43?q=80&w=1920&auto=format&fit=crop" className="w-full h-full object-cover" />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="max-w-2xl">
-                <span className="inline-block px-3 py-1 mb-4 text-sm font-bold tracking-widest bg-rouge-france rounded uppercase">La Nouvelle Ère</span>
-                <h1 className="text-6xl md:text-8xl font-oswald font-bold leading-tight mb-6 uppercase">Złota Era <br/> <span className="text-bleu-de-france bg-white px-2">Francuskiego</span> Basketu</h1>
-                <p className="text-xl md:text-2xl font-light mb-8 text-gray-300">Od legendy Tony'ego Parkera po fenomen Victora Wembanyamy. Odkryj potęgę "Les Bleus".</p>
-                <div className="flex space-x-4">
-                  <a href="#stars" className="px-8 py-4 bg-bleu-de-france text-white font-bold rounded-lg hover:bg-blue-700 transition transform hover:-translate-y-1">Poznaj Gwiazdy</a>
-                  <a href="#ai" className="px-8 py-4 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition transform hover:-translate-y-1">Zapytaj AI</a>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-
-        const InfoCards = () => (
-          <section className="py-20 bg-gray-50 border-b">
-            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-xl shadow-sm text-center border-t-4 border-bleu-de-france">
-                <div className="text-4xl mb-4">🏅</div>
-                <h4 className="font-bold mb-2 uppercase tracking-tight text-lg">Potęga Olimpijska</h4>
-                <p className="text-sm text-gray-500">Srebrni medaliści z Tokio 2020 i Paryża 2024. Drużyna, która rzuca wyzwanie USA.</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm text-center border-t-4 border-white">
-                <div className="text-4xl mb-4">💎</div>
-                <h4 className="font-bold mb-2 uppercase tracking-tight text-lg">Akademia Talentów</h4>
-                <p className="text-sm text-gray-500">Słynny INSEP kształtujący najlepszych atletów Europy od dziesięcioleci.</p>
-              </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm text-center border-t-4 border-rouge-france">
-                <div className="text-4xl mb-4">📈</div>
-                <h4 className="font-bold mb-2 uppercase tracking-tight text-lg">NBA Dominacja</h4>
-                <p className="text-sm text-gray-500">Najwięcej graczy spoza USA w ostatnich draftach pochodzi właśnie z Francji.</p>
-              </div>
-            </div>
-          </section>
-        );
-
-        const StatsSection = () => (
-          <section id="stats" className="py-24 bg-gray-900 text-white overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                <div>
-                  <h2 className="text-4xl md:text-5xl font-oswald font-bold mb-6 uppercase">Ekspansja do NBA</h2>
-                  <div className="w-20 h-1 bg-bleu-de-france mb-8"></div>
-                  <p className="text-gray-400 text-lg mb-6">Francja dostarcza największą liczbę zawodników do NBA spoza Ameryki Północnej. Zobacz dynamikę wzrostu na przestrzeni lat.</p>
-                  <div className="grid grid-cols-2 gap-8 mt-12">
-                    <div className="border-l-4 border-rouge-france pl-4">
-                      <span className="block text-4xl font-oswald font-bold">14</span>
-                      <span className="text-gray-400 uppercase text-sm">Aktywnych graczy</span>
-                    </div>
-                    <div className="border-l-4 border-bleu-de-france pl-4">
-                      <span className="block text-4xl font-oswald font-bold">#1</span>
-                      <span className="text-gray-400 uppercase text-sm">Draft 2024 Power</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white/5 p-8 rounded-3xl border border-white/10 h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={NBA_GROWTH_DATA}>
-                      <defs>
-                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#002395" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#002395" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis dataKey="year" stroke="#888" />
-                      <YAxis stroke="#888" />
-                      <Tooltip contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '10px' }} />
-                      <Area type="monotone" dataKey="count" stroke="#002395" fill="url(#colorCount)" strokeWidth={3} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-
-        const AIAnalyst = () => {
-          const [messages, setMessages] = useState([
-            { role: 'model', text: 'Witaj! Jestem Twoim ekspertem od francuskiej koszykówki. O co chcesz zapytać?' }
-          ]);
-          const [input, setInput] = useState('');
-          const scrollRef = useRef(null);
-
-          useEffect(() => {
-            if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-          }, [messages]);
-
-          const handleSubmit = (e) => {
-            e.preventDefault();
-            if (!input.trim()) return;
-            
-            const userMsg = input;
-            setInput('');
-            setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-            
-            // Symulacja odpowiedzi (AI wymaga bezpiecznego klucza API, którego nie publikujemy na GitHubie)
-            setTimeout(() => {
-              setMessages(prev => [...prev, { 
-                role: 'model', 
-                text: `Analizuję Twoje pytanie o "${userMsg}". Francuski basket jest obecnie w najlepszym momencie w historii, dzięki systemowi szkolenia INSEP i nowej fali talentów w NBA!` 
-              }]);
-            }, 1000);
-          };
-
-          return (
-            <section id="ai" className="py-24 bg-white">
-              <div className="max-w-4xl mx-auto px-4">
-                <div className="text-center mb-12">
-                  <h2 className="text-4xl font-oswald font-bold mb-4 uppercase">Ekspert AI Francuskiego Basketu</h2>
-                  <p className="text-gray-600">Zapytaj o statystyki, historię lub przyszłość talentów znad Sekwany.</p>
-                </div>
-                <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[500px] border border-gray-100">
-                  <div className="bg-bleu-de-france p-4 text-white flex items-center justify-between">
-                    <span className="font-bold tracking-widest text-sm uppercase">Analyst FR-AI</span>
-                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                  </div>
-                  <div ref={scrollRef} className="flex-1 p-6 overflow-y-auto space-y-4 chat-scroll bg-gray-50">
-                    {messages.map((m, i) => (
-                      <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] p-4 rounded-2xl ${m.role === 'user' ? 'bg-bleu-de-france text-white rounded-tr-none' : 'bg-white text-gray-800 shadow-sm rounded-tl-none'}`}>
-                          {m.text}
+            <section id="hero" className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-gray-50">
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-blue-50/50 skew-x-12 transform origin-top-right"></div>
+                <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-8">
+                        <span className="inline-block px-4 py-1.5 bg-rouge/10 text-rouge font-bold text-xs tracking-widest rounded-full uppercase">
+                            La Révolution est arrivée
+                        </span>
+                        <h1 className="text-5xl lg:text-7xl font-serif font-bold text-gray-900 leading-[1.1]">
+                            Od Parkera <br/> do <span className="text-transparent bg-clip-text bg-gradient-to-r from-bleu to-rouge">Wembanyamy</span>
+                        </h1>
+                        <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
+                            Francja stała się drugą potęgą koszykarską świata. Poznaj historię, statystyki i przyszłość "Les Bleus" na interaktywnej platformie.
+                        </p>
+                        <div className="flex gap-4">
+                            <a href="#ai-assistant" className="group px-8 py-4 bg-gray-900 text-white rounded-xl font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition duration-300 flex items-center gap-2">
+                                Zapytaj Eksperta AI 
+                                <span>→</span>
+                            </a>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  <form onSubmit={handleSubmit} className="p-4 bg-white border-t flex gap-2">
-                    <input 
-                      value={input} 
-                      onChange={e => setInput(e.target.value)} 
-                      placeholder="Zapytaj o zawodnika lub ligę..." 
-                      className="flex-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-bleu-de-france outline-none text-sm" 
-                    />
-                    <button className="bg-bleu-de-france text-white px-6 py-2 rounded-xl hover:bg-blue-800 transition uppercase font-bold text-xs">Wyślij</button>
-                  </form>
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-bleu to-rouge rounded-[2rem] blur-2xl opacity-20 transform rotate-6"></div>
+                        <img 
+                            src="https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000&auto=format&fit=crop" 
+                            alt="Basketball Art" 
+                            className="relative rounded-[2rem] shadow-2xl border-4 border-white rotate-[-3deg] hover:rotate-0 transition duration-500 object-cover h-[500px] w-full"
+                        />
+                    </div>
                 </div>
-              </div>
             </section>
-          );
+        );
+
+        const Legends = () => (
+            <section id="legends" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-serif font-bold mb-4">Ikony Francuskiego Basketu</h2>
+                        <div className="w-20 h-1 bg-bleu mx-auto rounded-full"></div>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {PLAYERS.map((player) => (
+                            <div key={player.id} className="group relative bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition duration-300">
+                                <div className="h-64 overflow-hidden">
+                                    <img src={player.img} alt={player.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
+                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold shadow-sm">
+                                        {player.nickname}
+                                    </div>
+                                </div>
+                                <div className="p-8">
+                                    <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2">{player.name}</h3>
+                                    <p className="text-bleu font-semibold text-sm mb-4">{player.stats}</p>
+                                    <p className="text-gray-600 text-sm leading-relaxed">{player.desc}</p>
+                                </div>
+                                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-bleu via-white to-rouge transform scale-x-0 group-hover:scale-x-100 transition duration-500"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Facts = () => (
+            <section id="facts" className="py-20 bg-gray-900 text-white overflow-hidden relative">
+                <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(#444 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="grid md:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6">Czy wiesz, że...</h2>
+                            <div className="space-y-6">
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-bleu flex items-center justify-center font-bold text-xl flex-shrink-0">1</div>
+                                    <p className="text-gray-300">Pierwszy mecz koszykówki w Europie rozegrano w Paryżu w 1893 roku, zaledwie dwa lata po wynalezieniu gry przez Naismitha.</p>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center font-bold text-xl flex-shrink-0">2</div>
+                                    <p className="text-gray-300">Francja jest jedynym krajem, który dwukrotnie z rzędu grał z USA w finale Igrzysk Olimpijskich (2020, 2024).</p>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-rouge flex items-center justify-center font-bold text-xl flex-shrink-0">3</div>
+                                    <p className="text-gray-300">Betonowe boiska w Paryżu (np. Pigalle Duperré) są uznawane za najpiękniejsze artystyczne boiska na świecie.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-gradient-to-br from-bleu to-blue-900 p-8 rounded-3xl shadow-2xl transform rotate-2 hover:rotate-0 transition duration-500">
+                            <h3 className="text-2xl font-bold mb-2">Słowo od twórcy</h3>
+                            <p className="opacity-80 italic mb-6">"Ten projekt to hołd dla ewolucji francuskiego basketu. Od ulic Paryża po parkiety NBA."</p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-white rounded-full"></div>
+                                <div>
+                                    <p className="font-bold text-sm">Twój GitHub</p>
+                                    <p className="text-xs opacity-70">Frontend Developer & Basket Fan</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const AIAssistant = () => {
+            const [messages, setMessages] = useState([
+                { type: 'bot', text: 'Bonjour! Jestem ekspertem od francuskiej koszykówki. Zapytaj mnie o Wembanyamę, Parkera, Goberta lub historię kadry!' }
+            ]);
+            const [input, setInput] = useState('');
+            const [isTyping, setIsTyping] = useState(false);
+            const messagesEndRef = useRef(null);
+
+            const scrollToBottom = () => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            };
+
+            useEffect(scrollToBottom, [messages, isTyping]);
+
+            const handleSend = (e) => {
+                e.preventDefault();
+                if (!input.trim()) return;
+
+                const userText = input;
+                setMessages(prev => [...prev, { type: 'user', text: userText }]);
+                setInput('');
+                setIsTyping(true);
+
+                // Symulacja myślenia AI
+                setTimeout(() => {
+                    const lowerText = userText.toLowerCase();
+                    let response = AI_KNOWLEDGE['default'];
+                    
+                    if (lowerText.includes('wemby') || lowerText.includes('wembanyama') || lowerText.includes('alien')) response = AI_KNOWLEDGE['wembanyama'];
+                    else if (lowerText.includes('parker') || lowerText.includes('tony')) response = AI_KNOWLEDGE['parker'];
+                    else if (lowerText.includes('gobert') || lowerText.includes('rudy')) response = AI_KNOWLEDGE['gobert'];
+                    else if (lowerText.includes('francja') || lowerText.includes('kadra') || lowerText.includes('igrzyska')) response = AI_KNOWLEDGE['francja'];
+                    else if (lowerText.includes('nba') || lowerText.includes('draft')) response = AI_KNOWLEDGE['nba'];
+
+                    setMessages(prev => [...prev, { type: 'bot', text: response }]);
+                    setIsTyping(false);
+                }, 1500);
+            };
+
+            return (
+                <section id="ai-assistant" className="py-24 bg-blue-50">
+                    <div className="max-w-3xl mx-auto px-6">
+                        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-blue-100 flex flex-col h-[600px]">
+                            <div className="bg-bleu p-6 text-white flex justify-between items-center">
+                                <div>
+                                    <h3 className="font-bold text-lg">Wirtualny Ekspert LNB</h3>
+                                    <p className="text-xs text-blue-200">Powered by Simulated Intelligence</p>
+                                </div>
+                                <div className="w-3 h-3 bg-green-400 rounded-full shadow-[0_0_10px_#4ade80]"></div>
+                            </div>
+                            
+                            <div className="flex-1 p-6 overflow-y-auto chat-container bg-slate-50 space-y-4">
+                                {messages.map((msg, idx) => (
+                                    <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed ${
+                                            msg.type === 'user' 
+                                            ? 'bg-bleu text-white rounded-br-none shadow-md' 
+                                            : 'bg-white text-gray-800 rounded-bl-none shadow-sm border border-gray-100'
+                                        }`}>
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                ))}
+                                {isTyping && (
+                                    <div className="flex justify-start">
+                                        <div className="bg-white p-4 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 flex gap-1">
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                                            <div className="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                                        </div>
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            <form onSubmit={handleSend} className="p-4 bg-white border-t border-gray-100 flex gap-3">
+                                <input 
+                                    type="text" 
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    placeholder="Napisz np. 'Kim jest Wembanyama?'..." 
+                                    className="flex-1 bg-gray-100 text-gray-900 placeholder-gray-500 px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-bleu/50 transition"
+                                />
+                                <button type="submit" className="bg-rouge text-white px-6 py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-lg shadow-red-500/30">
+                                    Wyślij
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            );
         };
 
-        const PlayerSection = () => (
-          <section id="stars" className="py-24 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-oswald font-bold mb-4 uppercase">Ikony i Nadzieje</h2>
-                <div className="w-24 h-1 bg-rouge-france mx-auto"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                {PLAYERS.map(p => (
-                  <div key={p.id} className="group bg-gray-50 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 border border-gray-100">
-                    <div className="h-80 overflow-hidden relative">
-                      <img src={p.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt={p.name} />
-                      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black text-white">
-                        <p className="text-xs uppercase font-bold text-rouge-france mb-1">{p.position}</p>
-                        <h3 className="text-2xl font-oswald font-bold">{p.name}</h3>
-                      </div>
+        const Footer = () => (
+            <footer className="bg-gray-900 text-white py-12 border-t-4 border-bleu">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <h2 className="text-3xl font-serif font-bold mb-6">FRENCH<span className="text-rouge">HOOPS</span></h2>
+                    <p className="text-gray-500 text-sm mb-8">© 2026 Projekt Edukacyjny. Wszystkie zdjęcia użyte w celach demonstracyjnych.</p>
+                    <div className="flex justify-center gap-6">
+                        <div className="w-12 h-1 bg-bleu rounded-full"></div>
+                        <div className="w-12 h-1 bg-white rounded-full"></div>
+                        <div className="w-12 h-1 bg-rouge rounded-full"></div>
                     </div>
-                    <div className="p-6">
-                      <p className="text-sm text-bleu-de-france font-bold mb-3 uppercase tracking-wider">{p.team}</p>
-                      <p className="text-gray-600 text-sm italic mb-6 leading-relaxed">"{p.description}"</p>
-                      <div className="space-y-2">
-                        {p.achievements.map((a, i) => (
-                           <div key={i} className="flex items-center text-xs text-gray-700">
-                              <span className="w-1.5 h-1.5 bg-rouge-france rounded-full mr-2"></span>
-                              {a}
-                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+                </div>
+            </footer>
         );
 
         const App = () => (
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main>
-              <Hero />
-              <InfoCards />
-              <PlayerSection />
-              <StatsSection />
-              <AIAnalyst />
-            </main>
-            <footer className="bg-black text-white py-16 text-center border-t-8 border-bleu-de-france">
-              <p className="text-3xl font-oswald font-bold mb-4 uppercase tracking-tighter">FRENCH<span className="text-rouge-france">HOOPS</span></p>
-              <div className="flex justify-center space-x-6 mb-8 text-gray-500 text-sm uppercase font-bold">
-                <a href="#hero" className="hover:text-white">Home</a>
-                <a href="#stars" className="hover:text-white">Players</a>
-                <a href="#stats" className="hover:text-white">Stats</a>
-              </div>
-              <p className="text-gray-600 text-xs">© 2026 Portal Fanów Francuskiej Koszykówki. Created with Gemini AI Studio.</p>
-            </footer>
-          </div>
+            <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <Hero />
+                <Legends />
+                <Facts />
+                <AIAssistant />
+                <Footer />
+            </div>
         );
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
